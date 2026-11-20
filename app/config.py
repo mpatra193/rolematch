@@ -8,7 +8,7 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql+psycopg://rolematch:rolematch@localhost:5432/rolematch"
 
-    embedding_model: str = "all-MiniLM-L6-v2"
+    embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     embedding_dim: int = 384
 
     llm_provider: str = "mock"  # "openai" | "mock"

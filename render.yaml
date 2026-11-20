@@ -1,0 +1,24 @@
+# Render Blueprint: free Dockerized web service.
+# Deploy: render.com -> New -> Blueprint -> pick this repo -> set the two
+# secret env vars (DATABASE_URL, OPENAI_API_KEY) in the dashboard.
+services:
+  - type: web
+    name: rolematch
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: DATABASE_URL        # your Neon connection string
+        sync: false
+      - key: LLM_PROVIDER
+        value: openai
+      - key: OPENAI_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: OPENAI_API_KEY      # your Groq key (gsk_...)
+        sync: false
+      - key: OPENAI_MODEL
+        value: openai/gpt-oss-120b
+      - key: EMBEDDING_MODEL
+        value: sentence-transformers/all-MiniLM-L6-v2
+      - key: EMBEDDING_DIM
+        value: "384"

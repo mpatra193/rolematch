@@ -1,4 +1,8 @@
-"""Local embedding model (Sentence Transformers). Loaded lazily and cached."""
+"""Local embedding model via fastembed (ONNX runtime).
+
+ONNX keeps the memory footprint small (no PyTorch), so the app fits comfortably
+on free hosting tiers. The model is loaded lazily and cached.
+"""
 from functools import lru_cache
 
 from app.config import get_settings
@@ -6,19 +10,19 @@ from app.config import get_settings
 
 @lru_cache
 def _model():
-    from sentence_transformers import SentenceTransformer
+    from fastembed import TextEmbedding
 
-    return SentenceTransformer(get_settings().embedding_model)
+    return TextEmbedding(model_name=get_settings().embedding_model)
 
 
 def embed(text: str) -> list[float]:
-    return _model().encode(text, normalize_embeddings=True).tolist()
+    return next(iter(_model().embed([text]))).tolist()
 
 
 def embed_many(texts: list[str]) -> list[list[float]]:
     if not texts:
         return []
-    return _model().encode(texts, normalize_embeddings=True).tolist()
+    return [e.tolist() for e in _model().embed(list(texts))]
 
 
 def job_text(title: str, company: str, description: str, skills: list[str]) -> str:

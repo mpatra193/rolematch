@@ -5,7 +5,7 @@ psycopg[binary]==3.2.3
 pgvector==0.3.6
 pydantic==2.10.3
 pydantic-settings==2.6.1
-sentence-transformers==3.3.1
+fastembed>=0.4.0,<1.0
 openai==1.57.0
 python-multipart==0.0.17
 pypdf==5.1.0

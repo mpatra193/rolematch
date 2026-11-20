@@ -9,11 +9,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends build-essential
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Pre-download the embedding model + cache into a writable, world-readable dir.
-# HF Spaces runs the container as a non-root user, so HOME-based caches must be set.
-ENV HF_HOME=/app/.cache SENTENCE_TRANSFORMERS_HOME=/app/.cache
+# Pre-download the ONNX embedding model into a writable, world-readable cache,
+# so a non-root container (Render, HF, …) can read it and boot fast.
+ENV FASTEMBED_CACHE_PATH=/app/.cache HF_HOME=/app/.cache
 RUN mkdir -p /app/.cache && chmod -R 777 /app/.cache && \
-    python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
+    python -c "from fastembed import TextEmbedding; TextEmbedding(model_name='sentence-transformers/all-MiniLM-L6-v2')" && \
+    chmod -R 777 /app/.cache
 
 COPY . .
 
