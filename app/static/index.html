@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>RoleMatch</title>
+<style>
+  :root {
+    --bg: #0e1116; --panel: #161b22; --panel2: #1c232d; --border: #2a313c;
+    --text: #e6edf3; --muted: #9aa7b4; --accent: #4f8cff; --accent2: #3a6fd8;
+    --good: #2ea043; --bar: #30363d; --chip: #21303f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.5 -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  }
+  header {
+    padding: 16px 24px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+  }
+  header h1 { font-size: 18px; margin: 0; letter-spacing: .3px; }
+  header .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--good); box-shadow: 0 0 8px var(--good); }
+  header .sub { color: var(--muted); font-size: 13px; margin-left: auto; }
+  header a { color: var(--accent); text-decoration: none; }
+  .wrap { display: grid; grid-template-columns: 360px 1fr; gap: 0; height: calc(100vh - 59px); }
+  @media (max-width: 860px) { .wrap { grid-template-columns: 1fr; height: auto; } }
+  .col { padding: 20px; overflow-y: auto; }
+  .left { border-right: 1px solid var(--border); background: var(--panel); }
+  .card { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin: 0 0 12px; }
+  textarea, input[type=text] {
+    width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px; font: inherit; resize: vertical;
+  }
+  textarea { min-height: 120px; }
+  .row { display: flex; gap: 8px; align-items: center; }
+  button {
+    background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 10px 14px;
+    font: inherit; font-weight: 600; cursor: pointer;
+  }
+  button:hover { background: var(--accent2); }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  button.ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); font-weight: 500; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .divider { text-align: center; color: var(--muted); font-size: 12px; margin: 10px 0; }
+  .profile .name { font-weight: 700; font-size: 16px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .chip { background: var(--chip); border: 1px solid var(--border); color: var(--text); font-size: 12px; padding: 3px 8px; border-radius: 20px; }
+  .prefs { font-size: 13px; color: var(--muted); }
+  .prefs b { color: var(--text); }
+
+  .chat { display: flex; flex-direction: column; height: 100%; }
+  .messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 8px; }
+  .msg { max-width: 80%; padding: 9px 13px; border-radius: 12px; }
+  .msg.user { align-self: flex-end; background: var(--accent2); }
+  .msg.bot { align-self: flex-start; background: var(--panel2); border: 1px solid var(--border); }
+  .msg.tool { align-self: flex-start; background: transparent; border: 1px dashed var(--border); color: var(--muted); font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .composer { display: flex; gap: 8px; margin-top: 12px; }
+  .composer input { flex: 1; }
+
+  .recs { margin-top: 18px; }
+  .rec { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+  .rec .top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+  .rec .title { font-weight: 700; }
+  .rec .co { color: var(--muted); font-size: 13px; }
+  .rec .score { font-weight: 700; color: var(--accent); }
+  .rec .expl { font-size: 13.5px; margin: 8px 0 10px; color: #cdd6e0; }
+  .bars { display: grid; grid-template-columns: 90px 1fr 46px; gap: 6px 8px; align-items: center; font-size: 12px; color: var(--muted); }
+  .track { background: var(--bar); border-radius: 6px; height: 7px; overflow: hidden; }
+  .fill { height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); }
+  .fill.sem { background: linear-gradient(90deg, #2b7a4b, var(--good)); }
+  .empty { color: var(--muted); padding: 30px; text-align: center; border: 1px dashed var(--border); border-radius: 10px; }
+  .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: #b3261e; color: #fff; padding: 10px 16px; border-radius: 8px; display: none; }
+  .meta-pill { background: var(--chip); border:1px solid var(--border); color: var(--muted); font-size:11px; padding:2px 8px; border-radius:20px; }
+</style>
+</head>
+<body>
+<header>
+  <span class="dot"></span>
+  <h1>RoleMatch — your career agent</h1>
+  <span class="sub"><span id="provider" class="meta-pill">connecting…</span> &nbsp; <a href="/docs" target="_blank">API docs ↗</a></span>
+</header>
+
+<div class="wrap">
+  <!-- LEFT: candidate -->
+  <div class="col left">
+    <div class="card" id="createCard">
+      <h2>1 · Start with your resume</h2>
+      <textarea id="resumeText" placeholder="Paste your resume text here…"></textarea>
+      <div class="divider">— or —</div>
+      <div class="row">
+        <input type="file" id="resumeFile" accept=".txt,.pdf" />
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <button id="createBtn">Create profile</button>
+        <button class="ghost" id="sampleBtn" type="button">Use sample</button>
+      </div>
+    </div>
+
+    <div class="card profile" id="profileCard" style="display:none;">
+      <h2>Your profile</h2>
+      <div class="name" id="pName"></div>
+      <div class="muted" id="pTitle"></div>
+      <div class="muted" id="pYears"></div>
+      <div class="chips" id="pSkills"></div>
+    </div>
+
+    <div class="card" id="prefCard" style="display:none;">
+      <h2>Remembered preferences</h2>
+      <div class="prefs" id="prefs">None yet — tell the agent what you want.</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: chat + recs -->
+  <div class="col">
+    <div class="chat">
+      <h2>2 · Talk to your agent</h2>
+      <div class="messages" id="messages">
+        <div class="empty" id="chatEmpty">Create a profile first, then say what you want next —
+          e.g. “a remote backend role paying at least 160k”.</div>
+      </div>
+      <div class="composer">
+        <input type="text" id="chatInput" placeholder="e.g. remote ML role, at least 170k, no crypto" disabled />
+        <button id="sendBtn" disabled>Send</button>
+      </div>
+    </div>
+
+    <div class="recs" id="recs"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = location.origin;
+let candidateId = null;
+
+const $ = (id) => document.getElementById(id);
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.style.display = "block"; setTimeout(() => t.style.display = "none", 4000); }
+
+const SAMPLE = `Jordan Rivera
+jordan.rivera@example.com
+
+Senior Backend Engineer
+
+Summary
+Backend engineer with 6 years of experience building scalable Python services
+with FastAPI and PostgreSQL. Comfortable owning services end to end, deploying
+with Docker on AWS, and mentoring junior engineers.
+
+Skills
+Python, FastAPI, PostgreSQL, Docker, AWS, Redis, SQL, Git, Linux`;
+
+async function loadHealth() {
+  try {
+    const h = await (await fetch(API + "/health")).json();
+    $("provider").textContent = "LLM: " + h.llm_provider + " · " + h.embedding_model;
+  } catch { $("provider").textContent = "API offline"; }
+}
+
+$("sampleBtn").onclick = () => { $("resumeText").value = SAMPLE; };
+
+$("createBtn").onclick = async () => {
+  const text = $("resumeText").value.trim();
+  const file = $("resumeFile").files[0];
+  if (!text && !file) return toast("Paste resume text or choose a file.");
+  const fd = new FormData();
+  if (file) fd.append("file", file); else fd.append("resume", text);
+  $("createBtn").disabled = true; $("createBtn").textContent = "Parsing…";
+  try {
+    const res = await fetch(API + "/candidates", { method: "POST", body: fd });
+    if (!res.ok) throw new Error((await res.json()).detail || res.status);
+    const c = await res.json();
+    candidateId = c.id;
+    renderProfile(c);
+    $("chatInput").disabled = false; $("sendBtn").disabled = false;
+    $("chatEmpty").textContent = "Profile ready. What are you looking for next?";
+    $("prefCard").style.display = "block";
+  } catch (e) { toast("Create failed: " + e.message); }
+  finally { $("createBtn").disabled = false; $("createBtn").textContent = "Create profile"; }
+};
+
+function renderProfile(c) {
+  $("profileCard").style.display = "block";
+  $("pName").textContent = c.name || "Unknown";
+  $("pTitle").textContent = c.title || "";
+  $("pYears").textContent = (c.years_experience != null ? c.years_experience + " yrs experience" : "");
+  $("pSkills").innerHTML = (c.skills || []).map(s => `<span class="chip">${s}</span>`).join("");
+}
+
+function addMsg(text, cls) {
+  $("chatEmpty")?.remove();
+  const d = document.createElement("div");
+  d.className = "msg " + cls; d.textContent = text;
+  $("messages").appendChild(d);
+  $("messages").scrollTop = $("messages").scrollHeight;
+  return d;
+}
+
+async function send() {
+  const input = $("chatInput");
+  const msg = input.value.trim();
+  if (!msg || candidateId == null) return;
+  input.value = ""; addMsg(msg, "user");
+  $("sendBtn").disabled = true;
+  const thinking = addMsg("…", "bot");
+  try {
+    const res = await fetch(API + `/candidates/${candidateId}/chat`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: msg })
+    });
+    if (!res.ok) throw new Error((await res.json()).detail || res.status);
+    const data = await res.json();
+    thinking.textContent = data.reply;
+    (data.tool_calls || []).forEach(tc =>
+      addMsg("🔧 " + tc.name + "(" + JSON.stringify(tc.arguments) + ")", "tool"));
+    renderPrefs(data.preferences);
+    renderRecs(data.recommendations || []);
+  } catch (e) { thinking.textContent = "Error: " + e.message; }
+  finally { $("sendBtn").disabled = false; input.focus(); }
+}
+$("sendBtn").onclick = send;
+$("chatInput").addEventListener("keydown", (e) => { if (e.key === "Enter") send(); });
+
+function renderPrefs(p) {
+  if (!p) return;
+  const parts = [];
+  if (p.roles?.length) parts.push(`<b>roles</b>: ${p.roles.join(", ")}`);
+  if (p.locations?.length) parts.push(`<b>locations</b>: ${p.locations.join(", ")}`);
+  if (p.remote_ok != null) parts.push(`<b>remote</b>: ${p.remote_ok ? "yes" : "no"}`);
+  if (p.min_salary != null) parts.push(`<b>min salary</b>: $${p.min_salary.toLocaleString()}`);
+  if (p.seniority) parts.push(`<b>seniority</b>: ${p.seniority}`);
+  if (p.dealbreakers?.length) parts.push(`<b>dealbreakers</b>: ${p.dealbreakers.join(", ")}`);
+  $("prefs").innerHTML = parts.length ? parts.join("<br>") : "None yet — tell the agent what you want.";
+}
+
+function bar(label, value, cls) {
+  const pct = Math.round((value || 0) * 100);
+  return `<div>${label}</div><div class="track"><div class="fill ${cls}" style="width:${pct}%"></div></div><div>${pct}%</div>`;
+}
+
+function renderRecs(recs) {
+  const el = $("recs");
+  if (!recs.length) { el.innerHTML = `<div class="empty">No matches yet — refine your preferences above.</div>`; return; }
+  el.innerHTML = `<h2>3 · ${recs.length} recommended roles</h2>` + recs.map(r => `
+    <div class="rec">
+      <div class="top">
+        <div><span class="title">${r.job.title}</span> <span class="co">· ${r.job.company} · ${r.job.remote ? "Remote" : (r.job.location || "—")}</span></div>
+        <span class="score">${(r.score * 100).toFixed(0)}</span>
+      </div>
+      <div class="expl">${r.explanation}</div>
+      <div class="bars">
+        ${bar("semantic", r.semantic_score, "sem")}
+        ${bar("preference", r.preference_score, "")}
+      </div>
+    </div>`).join("");
+}
+
+loadHealth();
+</script>
+</body>
+</html>
