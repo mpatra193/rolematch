@@ -1,0 +1,17 @@
+Jordan Rivera
+jordan.rivera@example.com
+
+Senior Backend Engineer
+
+Summary
+Backend engineer with 6 years of experience building scalable Python services
+with FastAPI and PostgreSQL. Comfortable owning services end to end, deploying
+with Docker on AWS, and mentoring junior engineers.
+
+Experience
+- Senior Backend Engineer, Acme (2021-present): Led migration to FastAPI,
+  designed pgvector-backed search, 170k RPS peak.
+- Backend Engineer, Globex (2018-2021): Built REST APIs, Postgres schemas, CI/CD.
+
+Skills
+Python, FastAPI, PostgreSQL, Docker, AWS, Redis, SQL, Git, Linux

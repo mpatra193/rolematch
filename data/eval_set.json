@@ -1,0 +1,35 @@
+[
+  {
+    "candidate": {
+      "name": "Backend Specialist",
+      "title": "Senior Backend Engineer",
+      "years_experience": 6,
+      "skills": ["python", "fastapi", "postgresql", "docker", "aws"],
+      "summary": "Senior backend engineer building Python APIs and distributed systems."
+    },
+    "preferences": {"remote_ok": true, "min_salary": 160000, "roles": ["backend"]},
+    "relevant_titles": ["Senior Backend Engineer", "Staff Software Engineer", "Full Stack Engineer"]
+  },
+  {
+    "candidate": {
+      "name": "ML Candidate",
+      "title": "Machine Learning Engineer",
+      "years_experience": 4,
+      "skills": ["python", "pytorch", "nlp", "llm", "embeddings"],
+      "summary": "ML engineer focused on NLP, embeddings and model deployment."
+    },
+    "preferences": {"remote_ok": true, "min_salary": 150000, "roles": ["ml", "machine learning"]},
+    "relevant_titles": ["Machine Learning Engineer", "NLP Research Engineer"]
+  },
+  {
+    "candidate": {
+      "name": "Platform Candidate",
+      "title": "Platform Engineer",
+      "years_experience": 5,
+      "skills": ["kubernetes", "terraform", "aws", "ci/cd", "docker"],
+      "summary": "Infrastructure and platform engineer working with Kubernetes and Terraform."
+    },
+    "preferences": {"min_salary": 120000, "roles": ["platform"]},
+    "relevant_titles": ["Platform Engineer", "DevOps Engineer"]
+  }
+]
