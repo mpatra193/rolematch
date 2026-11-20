@@ -73,16 +73,45 @@
   .empty { color: var(--muted); padding: 30px; text-align: center; border: 1px dashed var(--border); border-radius: 10px; }
   .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: #b3261e; color: #fff; padding: 10px 16px; border-radius: 8px; display: none; }
   .meta-pill { background: var(--chip); border:1px solid var(--border); color: var(--muted); font-size:11px; padding:2px 8px; border-radius:20px; }
+
+  nav.tabs { display: flex; gap: 6px; }
+  nav.tabs button {
+    background: transparent; border: 1px solid var(--border); color: var(--muted);
+    padding: 7px 14px; border-radius: 8px; font-weight: 600;
+  }
+  nav.tabs button.active { background: var(--panel2); color: var(--text); border-color: var(--accent); }
+
+  .jobsview { padding: 24px; max-width: 1100px; margin: 0 auto; }
+  .jobsgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+  .job { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+  .job .jt { font-weight: 700; }
+  .job .jc { color: var(--muted); font-size: 13px; margin-bottom: 6px; }
+  .job .sal { color: var(--good); font-weight: 600; font-size: 13px; }
+  .job .desc { font-size: 13px; color: #cdd6e0; margin: 8px 0; }
+  .job .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+  .tag { background: var(--chip); border: 1px solid var(--border); font-size: 11px; padding: 2px 7px; border-radius: 20px; color: var(--text); }
+  .tag.meta { color: var(--muted); }
+  .addform { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 20px; }
+  .addform .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  @media (max-width: 720px) { .addform .grid { grid-template-columns: 1fr; } }
+  .addform label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 3px; }
+  .addform input[type=text], .addform input[type=number], .addform textarea { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 8px; font: inherit; }
+  .addform .check { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; }
+  details.addwrap summary { cursor: pointer; font-weight: 600; color: var(--accent); margin-bottom: 12px; }
 </style>
 </head>
 <body>
 <header>
   <span class="dot"></span>
-  <h1>RoleMatch — your career agent</h1>
+  <h1>RoleMatch</h1>
+  <nav class="tabs" style="margin-left:18px;">
+    <button id="tabAgent" class="active" onclick="showView('agent')">Agent</button>
+    <button id="tabJobs" onclick="showView('jobs')">Jobs</button>
+  </nav>
   <span class="sub"><span id="provider" class="meta-pill">connecting…</span> &nbsp; <a href="/docs" target="_blank">API docs ↗</a></span>
 </header>
 
-<div class="wrap">
+<div class="wrap" id="viewAgent">
   <!-- LEFT: candidate -->
   <div class="col left">
     <div class="card" id="createCard">
@@ -128,6 +157,32 @@
 
     <div class="recs" id="recs"></div>
   </div>
+</div>
+
+<!-- JOBS VIEW -->
+<div class="jobsview" id="viewJobs" style="display:none;">
+  <details class="addwrap addform">
+    <summary>+ Add a job</summary>
+    <div class="grid">
+      <div><label>Title *</label><input type="text" id="j_title" placeholder="Senior Backend Engineer"></div>
+      <div><label>Company *</label><input type="text" id="j_company" placeholder="Acme"></div>
+      <div><label>Location</label><input type="text" id="j_location" placeholder="San Francisco, CA"></div>
+      <div><label>Salary min</label><input type="number" id="j_salary_min" placeholder="150000"></div>
+      <div><label>Salary max</label><input type="number" id="j_salary_max" placeholder="200000"></div>
+      <div><label>Min years</label><input type="number" id="j_min_years" placeholder="4"></div>
+      <div><label>Seniority</label><input type="text" id="j_seniority" placeholder="senior"></div>
+      <div><label>Skills (comma-separated)</label><input type="text" id="j_skills" placeholder="python, fastapi, aws"></div>
+      <div class="check"><input type="checkbox" id="j_remote"><label style="margin:0">Remote</label></div>
+    </div>
+    <div style="margin-top:10px;"><label>Description</label><textarea id="j_desc" rows="2" placeholder="What the role involves…"></textarea></div>
+    <div style="margin-top:12px;"><button id="addJobBtn">Add job</button> <span class="muted">— it's embedded on save and becomes searchable immediately.</span></div>
+  </details>
+
+  <div class="row" style="justify-content:space-between; margin-bottom:12px;">
+    <h2 style="margin:0;">All jobs <span id="jobCount" class="meta-pill"></span></h2>
+    <button class="ghost" onclick="loadJobs()">Refresh</button>
+  </div>
+  <div class="jobsgrid" id="jobsgrid"></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -256,6 +311,66 @@ function renderRecs(recs) {
       </div>
     </div>`).join("");
 }
+
+// ---- views ----
+function showView(v) {
+  const agent = v === "agent";
+  $("viewAgent").style.display = agent ? "grid" : "none";
+  $("viewJobs").style.display = agent ? "none" : "block";
+  $("tabAgent").classList.toggle("active", agent);
+  $("tabJobs").classList.toggle("active", !agent);
+  if (!agent) loadJobs();
+}
+
+async function loadJobs() {
+  try {
+    const jobs = await (await fetch(API + "/jobs?limit=100")).json();
+    $("jobCount").textContent = jobs.length;
+    $("jobsgrid").innerHTML = jobs.map(j => {
+      const sal = (j.salary_min || j.salary_max)
+        ? `$${(j.salary_min||0).toLocaleString()} – $${(j.salary_max||0).toLocaleString()}` : "Salary n/a";
+      const meta = [];
+      if (j.seniority) meta.push(j.seniority);
+      if (j.min_years != null) meta.push(j.min_years + "+ yrs");
+      return `<div class="job">
+        <div class="jt">${j.title}</div>
+        <div class="jc">${j.company} · ${j.remote ? "Remote" : (j.location || "—")}</div>
+        <div class="sal">${sal}</div>
+        <div class="desc">${j.description || ""}</div>
+        <div class="tags">
+          ${(j.skills||[]).map(s=>`<span class="tag">${s}</span>`).join("")}
+          ${meta.map(m=>`<span class="tag meta">${m}</span>`).join("")}
+        </div>
+      </div>`;
+    }).join("") || `<div class="empty">No jobs yet. Add one above.</div>`;
+  } catch (e) { toast("Could not load jobs: " + e.message); }
+}
+
+$("addJobBtn").onclick = async () => {
+  const title = $("j_title").value.trim(), company = $("j_company").value.trim();
+  if (!title || !company) return toast("Title and company are required.");
+  const num = (id) => { const v = $(id).value.trim(); return v === "" ? null : Number(v); };
+  const payload = {
+    title, company,
+    location: $("j_location").value.trim(),
+    remote: $("j_remote").checked,
+    description: $("j_desc").value.trim(),
+    skills: $("j_skills").value.split(",").map(s=>s.trim().toLowerCase()).filter(Boolean),
+    salary_min: num("j_salary_min"), salary_max: num("j_salary_max"),
+    min_years: num("j_min_years"),
+    seniority: $("j_seniority").value.trim() || null,
+  };
+  $("addJobBtn").disabled = true; $("addJobBtn").textContent = "Embedding…";
+  try {
+    const res = await fetch(API + "/jobs", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(payload) });
+    if (!res.ok) throw new Error((await res.json()).detail || res.status);
+    ["j_title","j_company","j_location","j_salary_min","j_salary_max","j_min_years","j_seniority","j_skills","j_desc"].forEach(id=>$(id).value="");
+    $("j_remote").checked = false;
+    toast("Job added and embedded.");
+    loadJobs();
+  } catch (e) { toast("Add failed: " + e.message); }
+  finally { $("addJobBtn").disabled = false; $("addJobBtn").textContent = "Add job"; }
+};
 
 loadHealth();
 </script>
