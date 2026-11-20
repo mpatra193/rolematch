@@ -28,7 +28,7 @@ OpenAI (agent + explanations, pluggable) · Docker.
   `LLM_PROVIDER=openai` and `OPENAI_API_KEY=...` for real extraction, explanations,
   and function calling. See [`app/llm/`](app/llm/). Set `OPENAI_BASE_URL` to use any
   OpenAI-compatible provider instead of OpenAI — e.g. Groq
-  (`https://api.groq.com/openai/v1`, model `llama-3.3-70b-versatile`) or OpenRouter.
+  (`https://api.groq.com/openai/v1`, model `openai/gpt-oss-120b`) or OpenRouter.
   If the provider errors (no credits, rate limit), the app degrades to the offline
   agent instead of failing.
 - **Embeddings run locally** via `all-MiniLM-L6-v2` (384-dim) — no key needed. Jobs are
