@@ -10,5 +10,9 @@ from app.llm.openai_client import OpenAILLM
 def get_llm() -> LLM:
     settings = get_settings()
     if settings.llm_provider == "openai" and settings.openai_api_key:
-        return OpenAILLM(settings.openai_api_key, settings.openai_model)
+        return OpenAILLM(
+            settings.openai_api_key,
+            settings.openai_model,
+            settings.openai_base_url or None,
+        )
     return MockLLM()

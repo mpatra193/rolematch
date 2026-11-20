@@ -6,10 +6,12 @@ from app.llm.base import LLM
 class OpenAILLM(LLM):
     available = True
 
-    def __init__(self, api_key: str, model: str):
+    def __init__(self, api_key: str, model: str, base_url: str | None = None):
         from openai import OpenAI
 
-        self._client = OpenAI(api_key=api_key)
+        # base_url lets this target any OpenAI-compatible endpoint (Groq,
+        # OpenRouter, Together, …). None uses OpenAI's default.
+        self._client = OpenAI(api_key=api_key, base_url=base_url)
         self._model = model
 
     def complete(self, prompt: str, system: str | None = None) -> str:

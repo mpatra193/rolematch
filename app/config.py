@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     llm_provider: str = "mock"  # "openai" | "mock"
     openai_api_key: str = ""
     openai_model: str = "gpt-4o-mini"
+    # Optional: point at any OpenAI-compatible endpoint (Groq, OpenRouter, etc.).
+    # Empty string -> OpenAI's default base URL.
+    openai_base_url: str = ""
 
 
 @lru_cache
