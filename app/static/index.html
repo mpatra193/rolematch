@@ -178,8 +178,9 @@
     <div style="margin-top:12px;"><button id="addJobBtn">Add job</button> <span class="muted">— it's embedded on save and becomes searchable immediately.</span></div>
   </details>
 
-  <div class="row" style="justify-content:space-between; margin-bottom:12px;">
-    <h2 style="margin:0;">All jobs <span id="jobCount" class="meta-pill"></span></h2>
+  <div class="row" style="justify-content:space-between; margin-bottom:12px; gap:12px;">
+    <h2 style="margin:0; white-space:nowrap;">All jobs <span id="jobCount" class="meta-pill"></span></h2>
+    <input type="text" id="jobSearch" placeholder="Search title, company, location, skill…" style="max-width:360px;">
     <button class="ghost" onclick="loadJobs()">Refresh</button>
   </div>
   <div class="jobsgrid" id="jobsgrid"></div>
@@ -322,28 +323,38 @@ function showView(v) {
   if (!agent) loadJobs();
 }
 
+let allJobs = [];
+
 async function loadJobs() {
   try {
-    const jobs = await (await fetch(API + "/jobs?limit=100")).json();
-    $("jobCount").textContent = jobs.length;
-    $("jobsgrid").innerHTML = jobs.map(j => {
-      const sal = (j.salary_min || j.salary_max)
-        ? `$${(j.salary_min||0).toLocaleString()} – $${(j.salary_max||0).toLocaleString()}` : "Salary n/a";
-      const meta = [];
-      if (j.seniority) meta.push(j.seniority);
-      if (j.min_years != null) meta.push(j.min_years + "+ yrs");
-      return `<div class="job">
-        <div class="jt">${j.title}</div>
-        <div class="jc">${j.company} · ${j.remote ? "Remote" : (j.location || "—")}</div>
-        <div class="sal">${sal}</div>
-        <div class="desc">${j.description || ""}</div>
-        <div class="tags">
-          ${(j.skills||[]).map(s=>`<span class="tag">${s}</span>`).join("")}
-          ${meta.map(m=>`<span class="tag meta">${m}</span>`).join("")}
-        </div>
-      </div>`;
-    }).join("") || `<div class="empty">No jobs yet. Add one above.</div>`;
+    allJobs = await (await fetch(API + "/jobs?limit=100")).json();
+    renderJobs();
   } catch (e) { toast("Could not load jobs: " + e.message); }
+}
+
+function renderJobs() {
+  const q = ($("jobSearch").value || "").trim().toLowerCase();
+  const jobs = q ? allJobs.filter(j =>
+    [j.title, j.company, j.location, (j.skills||[]).join(" "), j.seniority, j.description]
+      .filter(Boolean).join(" ").toLowerCase().includes(q)) : allJobs;
+  $("jobCount").textContent = q ? `${jobs.length}/${allJobs.length}` : allJobs.length;
+  $("jobsgrid").innerHTML = jobs.map(j => {
+    const sal = (j.salary_min || j.salary_max)
+      ? `$${(j.salary_min||0).toLocaleString()} – $${(j.salary_max||0).toLocaleString()}` : "Salary n/a";
+    const meta = [];
+    if (j.seniority) meta.push(j.seniority);
+    if (j.min_years != null) meta.push(j.min_years + "+ yrs");
+    return `<div class="job">
+      <div class="jt">${j.title}</div>
+      <div class="jc">${j.company} · ${j.remote ? "Remote" : (j.location || "—")}</div>
+      <div class="sal">${sal}</div>
+      <div class="desc">${j.description || ""}</div>
+      <div class="tags">
+        ${(j.skills||[]).map(s=>`<span class="tag">${s}</span>`).join("")}
+        ${meta.map(m=>`<span class="tag meta">${m}</span>`).join("")}
+      </div>
+    </div>`;
+  }).join("") || `<div class="empty">${allJobs.length ? "No jobs match “" + q + "”." : "No jobs yet. Add one above."}</div>`;
 }
 
 $("addJobBtn").onclick = async () => {
@@ -371,6 +382,8 @@ $("addJobBtn").onclick = async () => {
   } catch (e) { toast("Add failed: " + e.message); }
   finally { $("addJobBtn").disabled = false; $("addJobBtn").textContent = "Add job"; }
 };
+
+$("jobSearch").addEventListener("input", renderJobs);
 
 loadHealth();
 </script>

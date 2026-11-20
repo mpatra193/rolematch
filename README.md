@@ -1,10 +1,10 @@
 # RoleMatch
 
-A smaller, self-contained version of RoleMatch's core: an AI career agent that parses a
-resume, remembers a candidate's preferences across a conversation, retrieves jobs by
-semantic similarity, ranks them against those preferences, and explains each match.
+A self-contained AI career agent that parses a resume, remembers a candidate's
+preferences across a conversation, retrieves jobs by semantic similarity, ranks them
+against those preferences, and explains each match.
 
-It implements the six core capabilities from the brief:
+It implements six core capabilities:
 
 | # | Capability | Where |
 |---|------------|-------|
