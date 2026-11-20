@@ -1,3 +1,13 @@
+---
+title: RoleMatch
+emoji: 🎯
+colorFrom: indigo
+colorTo: blue
+sdk: docker
+app_port: 8000
+pinned: false
+---
+
 # RoleMatch
 
 A self-contained AI career agent that parses a resume, remembers a candidate's

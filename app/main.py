@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.api import candidates, chat, jobs, recommendations
 from app.config import get_settings
-from app.db import init_db
+from app.db import init_db, seed_jobs_if_empty
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
@@ -15,6 +15,7 @@ STATIC_DIR = Path(__file__).resolve().parent / "static"
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    seed_jobs_if_empty()  # populate sample jobs on a fresh deployment
     yield
 
 
