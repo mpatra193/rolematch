@@ -106,3 +106,7 @@ pytest -q        # metric unit tests (no DB required)
 
 Auth, multi-tenant companies, the hiring side, resume tailoring, and background job
 ingestion — this is a focused demo of the candidate-side recommendation core.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
